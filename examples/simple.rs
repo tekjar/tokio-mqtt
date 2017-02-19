@@ -1,42 +1,23 @@
-extern crate tokio_mqtt;
-extern crate mqtt3;
 extern crate futures;
-extern crate tokio_core as core;
+extern crate tokio_core;
+extern crate tokio_mqtt;
 
+use std::default::Default;
 use futures::Future;
-use futures::Sink;
-use futures::Stream;
-use core::net::TcpStream;
-use core::io::Io;
+use tokio_core::reactor::Core;
 
-use tokio_mqtt::codec::MqttCodec;
-use tokio_mqtt::packet::*;
-use tokio_mqtt::clientoptions::MqttOptions;
-use tokio_mqtt::connection::Connection;
-
-use std::net::{SocketAddr, ToSocketAddrs};
-use std::thread;
-use std::time::Duration;
-
-fn lookup_ipv4<A: ToSocketAddrs>(addr: A) -> SocketAddr {
-    let addrs = addr.to_socket_addrs().expect("Conversion Failed");
-    for addr in addrs {
-        if let SocketAddr::V4(_) = addr {
-            return addr;
-        }
-    }
-    unreachable!("Cannot lookup address");
-}
-
+use tokio_mqtt::{Client};
 
 fn main() {
-    let mut event_loop = core::reactor::Core::new().unwrap();
-    let handle = event_loop.handle();
+    let addr = "127.0.0.1:1883".parse().unwrap();
+    let mut lp = Core::new().unwrap();
 
-    let opts = MqttOptions::new();
-    //let addr = lookup_ipv4("localhost:1883");
+    let res = Client::connect(&addr, &lp.handle())
+        .and_then(|conn| {
+            Ok(())
+        })
+    ;
 
-    let mut connection = Connection::start(opts, None, None).unwrap();
-    let e = connection.run();
-    println!("{:?}", e);
+    let val = lp.run(res).unwrap();
+    // println!("{:?}", val.value());
 }

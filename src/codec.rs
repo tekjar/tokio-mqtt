@@ -18,6 +18,7 @@ impl Codec for MqttCodec {
             }
         };
 
+        // Remove packts from 'buf' which are serialized
         buf.drain_to(len);
         // println!("{:?}, {:?}", len, packet);
         Ok(Some(packet))
